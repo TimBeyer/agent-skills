@@ -22,7 +22,7 @@ Before writing a single line, understand the project and commit to a clear direc
    - **Visual-first**: Architecture diagrams, flow charts, screenshots front and center. Good for complex systems where spatial understanding matters.
    - **Developer-direct**: Code example in the first 10 lines. Minimal preamble. Respects the reader's time. Good for libraries and utilities.
    - **Progressive disclosure**: Clean, scannable surface with rich detail in collapsible sections. Good for projects with diverse audiences.
-   - **Showcase**: Demo-driven — GIFs, screenshots, before/after comparisons that sell the experience. Good for tools with visual output.
+   - **Showcase**: Demo-driven — GIFs, screenshots, before/after comparisons that sell the experience. Good for tools with visual output. For CLI/TUI tools, consider using the `terminal-recording` skill to create an automated demo GIF.
 
 5. **Memorable hook**: What's the one thing that makes someone stop scrolling? A striking Mermaid diagram showing the architecture? A one-liner that captures the entire project? A code example so clean it speaks for itself? Identify this and put it near the top.
 
@@ -93,7 +93,7 @@ A great README answers these questions, roughly in this order. Adapt to the stru
 
 1. **What is this?** — One crisp sentence. If you can't say it in one sentence, you don't understand the project well enough. This is the hardest and most important line in the entire README.
 2. **Why should I care?** — The problem it solves, not a feature list. Features describe "what"; motivation explains "why someone would choose this."
-3. **Show me** — A code snippet, screenshot, diagram, or terminal recording. Proof it works, not a promise that it does. This should appear before the reader has to scroll much.
+3. **Show me** — A code snippet, screenshot, diagram, or terminal recording. Proof it works, not a promise that it does. This should appear before the reader has to scroll much. For CLI tools and TUI apps, a GIF of the tool in action is far more compelling than describing what it does. If the `terminal-recording` skill is available, use it to guide the user through creating an automated, reproducible demo recording.
 4. **How do I start?** — Fastest path from zero to working. Ideally 1-3 commands. This must be a single path — the simplest one. Alternative workflows (headless mode, config files, Docker, etc.) are not quickstart material; they belong further down or in their own doc. A quickstart with options is a quickstart that confuses. The reader should be able to copy-paste and go.
 5. **How does it work?** — Architecture, key concepts, mental model. Only include this in a product README if it helps users understand what they're getting — not as an internal deep-dive. For contributor-facing architecture, link to a separate doc.
 6. **What else can it do?** — Deeper features, configuration, advanced usage. Collapsible sections shine here — present the depth without overwhelming the surface.
