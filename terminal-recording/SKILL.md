@@ -59,19 +59,16 @@ Best for: one-off recordings, exploring what looks good, apps with unpredictable
 Guide the user through:
 
 ```bash
-# Clean shell (no zsh plugins/prompt theme)
-ZDOTDIR=$(mktemp -d) asciinema rec -c zsh demo.cast
-
-# Or skip the shell entirely — just record the command
+# Skip the shell entirely — just record the command
 asciinema rec --cols 120 --rows 35 -c 'my-command' demo.cast
 ```
+
+If the user needs a shell prompt visible, launch a clean shell with no config loaded (e.g., `bash --norc --noprofile`, or `env -i bash`) to avoid visual noise from plugins and prompt themes.
 
 Then convert:
 
 ```bash
 agg demo.cast demo.gif
-# or with custom font:
-agg --font-dir ~/Library/Fonts demo.cast demo.gif
 ```
 
 ### Path 2: Automated script (storyboard-driven)
