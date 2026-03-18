@@ -16,11 +16,11 @@ This skill creates clean, reproducible terminal recordings for project documenta
 
 The recording pipeline uses three tools, each doing what it's best at:
 
-| Tool | Role | Install |
-|---|---|---|
-| **tmux** | Reliable keystroke delivery + screen content detection | `brew install tmux` |
-| **asciinema** | Clean terminal recording (captures escape sequences, not pixels) | `brew install asciinema` |
-| **agg** | Renders asciicast → GIF (no flashing, crisp text) | `brew install agg` |
+| Tool | Role |
+|---|---|
+| **tmux** | Reliable keystroke delivery + screen content detection |
+| **asciinema** | Clean terminal recording (captures escape sequences, not pixels) |
+| **agg** | Renders asciicast → GIF (no flashing, crisp text) |
 
 ### Why this stack
 
@@ -34,26 +34,15 @@ The recording pipeline uses three tools, each doing what it's best at:
 
 agg renders text using bundled or system fonts. If the recording contains special characters (Unicode spinners, Braille patterns, Nerd Font glyphs, box-drawing characters) that render as `?` boxes, point agg at a font directory with coverage:
 
-```bash
-# Install a font with good Unicode coverage
-brew install --cask font-fira-code
-# or: brew install --cask font-jetbrains-mono
+Install a monospace font with good Unicode coverage (e.g., Fira Code, JetBrains Mono) and pass its directory to agg:
 
-# Pass the font directory to agg
-agg --font-dir ~/Library/Fonts demo.cast demo.gif
+```bash
+agg --font-dir /path/to/fonts demo.cast demo.gif
 ```
 
 ## Setup
 
-Before recording, ensure all three tools are installed. Offer to check:
-
-```bash
-# Check what's installed
-which tmux asciinema agg
-
-# Install anything missing
-brew install tmux asciinema agg
-```
+Before recording, ensure all three tools are installed. Check what's available and install anything missing using the platform's package manager.
 
 ### Alt screen buffer
 
