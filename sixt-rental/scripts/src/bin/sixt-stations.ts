@@ -15,6 +15,7 @@ Search for Sixt rental stations by city or location name.
 Options:
   --query    City or location to search for (required)
   --country  2-letter country code for API context (default: DE)
+  --token    JWT auth token (from sixt-login)
   --table    Output as human-readable table instead of JSON
   -h, --help Show this help`);
   process.exit(0);
@@ -27,7 +28,7 @@ if (!values.query) {
 
 validateCountryCode(values.country!);
 
-const result = await suggestLocations(values.query!);
+const result = await suggestLocations(values.query!, values.token);
 
 if (!result.suggestions?.length) {
   console.error(`No stations found for "${values.query}"`);

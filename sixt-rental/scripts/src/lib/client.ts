@@ -1,14 +1,33 @@
 // Sixt gRPC-web API client using native fetch
 
 import type { CountryConfig, SixtProtection } from "./types";
+import { getUserId } from "./auth";
 
 const GRPC = "https://grpc-prod.orange.sixt.com";
 
+/** Extract user_id from token, caching to avoid repeated decoding */
+let cachedToken: string | undefined;
+let cachedUserId: string | undefined;
+function getUserIdFromToken(token: string): string {
+  if (token !== cachedToken) {
+    cachedToken = token;
+    cachedUserId = getUserId(token);
+  }
+  return cachedUserId!;
+}
+
 /** POST JSON to a Sixt gRPC-web endpoint */
-async function grpcPost<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
+async function grpcPost<T>(endpoint: string, body: Record<string, unknown>, token?: string): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   const res = await fetch(`${GRPC}${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -18,7 +37,8 @@ async function grpcPost<T>(endpoint: string, body: Record<string, unknown>): Pro
 }
 
 /** Search for locations matching a query string */
-export async function suggestLocations(query: string) {
+export async function suggestLocations(query: string, token?: string) {
+  const userProfileId = token ? getUserIdFromToken(token) : "";
   return grpcPost<{
     suggestions?: Array<{
       location?: {
@@ -31,26 +51,27 @@ export async function suggestLocations(query: string) {
     query,
     auto_complete_session_id: crypto.randomUUID(),
     vehicle_type: "1",
-    user_profile_id: "",
+    user_profile_id: userProfileId,
     location_purpose: 1,
     include_fastlane: null,
-  });
+  }, token);
 }
 
 /** Resolve a branch ID to a location_selection_id */
-export async function selectLocation(branchId: string, country: CountryConfig) {
+export async function selectLocation(branchId: string, country: CountryConfig, token?: string) {
+  const userProfileId = token ? getUserIdFromToken(token) : "";
   return grpcPost<{
     location_selection_id?: string;
     selected_location?: { title?: string };
   }>("/com.sixt.service.rent_booking.api.SearchService/SelectLocation", {
-    user_profile_id: "",
+    user_profile_id: userProfileId,
     location_purpose: 1,
     vehicle_type: 1,
     auto_complete_session_id: crypto.randomUUID(),
     location_id: `BRANCH:${branchId}`,
     include_fastlane: null,
     sim_card_country_code: country.code,
-  });
+  }, token);
 }
 
 /** Fetch offers for a location and date range */
@@ -59,8 +80,9 @@ export async function getOffers(
   pickup: string,
   ret: string,
   country: CountryConfig,
-  opts: { corporateRate?: string; campaign?: string } = {},
+  opts: { corporateRate?: string; campaign?: string; token?: string } = {},
 ) {
+  const userProfileId = opts.token ? getUserIdFromToken(opts.token) : "";
   return grpcPost<{
     offers?: Array<{
       offer_id: string;
@@ -112,14 +134,14 @@ export async function getOffers(
       point_of_sale: country.pointOfSale,
       return_datetime: { value: ret },
       vehicle_type: 10,
-      user_profile_id: "",
+      user_profile_id: userProfileId,
       corporate_customer_number: opts.corporateRate || "",
       sim_card_country_code: country.code,
       device_location_country_code: country.code,
       campaign: opts.campaign || "",
     },
     enable_b2b_fallback: true,
-  });
+  }, opts.token);
 }
 
 /** Fetch full booking details (including protection packages) for a specific offer */
@@ -127,6 +149,7 @@ export async function getBookingForOffer(
   offerMatrixId: string,
   offerId: string,
   currency: string,
+  token?: string,
 ) {
   return grpcPost<{
     booking?: {
@@ -147,7 +170,7 @@ export async function getBookingForOffer(
     offer_matrix_id: offerMatrixId,
     offer_id: offerId,
     currency,
-  });
+  }, token);
 }
 
 /** Extract a specific protection package from a booking response */

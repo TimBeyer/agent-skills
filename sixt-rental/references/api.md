@@ -1,8 +1,33 @@
 # Sixt API Reference
 
+## gRPC-web API (offers)
+
 Base URL: `https://grpc-prod.orange.sixt.com`
 Protocol: JSON over gRPC-web (POST, Content-Type: application/json)
-Auth: None required
+Auth: Optional — pass `Authorization: Bearer <jwt>` for member pricing. Set `user_profile_id` to the JWT's `user_id` claim.
+
+## Authentication API
+
+Base URL: `https://web-api.orange.sixt.com`
+Protocol: JSON POST with `content-type: text/plain;charset=UTF-8`
+Required headers: `sx-platform: web-next`, `x-client-type: web`, `x-sx-tenant: 6`
+
+### Auth flow (email OTP)
+
+```
+1. POST /v2/users/getAuthMethod    {"username": "user@example.com"}
+   → confirms Sixt auth (vs social login)
+
+2. POST /v1/auth/requestLoginOTP   {"username": "user@example.com", "channels": ["email"]}
+   → {"otpExpiryTime": "...", "channels": ["email"]}
+
+3. User receives 6-digit OTP via email
+
+4. POST /v1/auth/verifyLoginOTP    {"username": "user@example.com", "otp": "123456"}
+   → {"accessToken": "<jwt>", "expiresIn": 300}
+```
+
+The JWT payload contains `user_id` and `mnum` (membership number). TTL is ~5 minutes.
 
 ## Endpoints
 

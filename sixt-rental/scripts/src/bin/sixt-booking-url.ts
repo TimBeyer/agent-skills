@@ -22,6 +22,7 @@ Options:
   --country       2-letter country code (default: DE)
   --campaign      Partner campaign code
   --station-name  Human-readable station name (auto-detected if omitted)
+  --token         JWT auth token for member pricing (from sixt-login)
   --table         Output just the URL string instead of JSON
   -h, --help      Show this help`);
   process.exit(0);
@@ -41,7 +42,7 @@ const country = getCountry(values.country!);
 
 // Resolve station to get location_selection_id
 console.error(`Resolving station ${values.station}...`);
-const loc = await selectLocation(values.station, country);
+const loc = await selectLocation(values.station, country, values.token);
 
 if (!loc.location_selection_id) {
   console.error(`Failed to get location_selection_id for station ${values.station}`);

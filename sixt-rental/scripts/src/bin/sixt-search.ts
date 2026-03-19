@@ -37,6 +37,7 @@ Options:
   --rate        Corporate customer number
   --campaign    Partner campaign code
   --limit       Max offers to fetch protection for (default: 5, 0 = all)
+  --token       JWT auth token for member pricing (from sixt-login)
   --table       Output as human-readable table instead of JSON
   -h, --help    Show this help`);
   process.exit(0);
@@ -56,6 +57,7 @@ validateCountryCode(values.country!);
 const country = getCountry(values.country!);
 const limit = parseInt(values.limit!, 10);
 const fetchProtection = !!values.protection && values.protection !== "none";
+const token = values.token;
 
 // --- Build filters from --filter, --electric, --family ---
 const filterExprs: string[] = values.filter || [];
@@ -69,7 +71,7 @@ let stations: SixtStation[];
 if (values.station) {
   stations = [{ id: values.station, name: `Station ${values.station}` }];
 } else {
-  const suggestions = await suggestLocations(values.city!);
+  const suggestions = await suggestLocations(values.city!, token);
   if (!suggestions.suggestions?.length) {
     console.error(`No stations found for "${values.city}"`);
     process.exit(1);
@@ -99,13 +101,14 @@ const allOffers: SixtOffer[] = [];
 for (const station of stations) {
   try {
     console.error(`Checking ${station.name}...`);
-    const loc = await selectLocation(station.id, country);
+    const loc = await selectLocation(station.id, country, token);
     if (!loc.location_selection_id) continue;
     if (loc.selected_location?.title) station.name = loc.selected_location.title;
 
     const result = await getOffers(loc.location_selection_id, values.pickup!, values.return!, country, {
       corporateRate: values.rate,
       campaign: values.campaign,
+      token,
     });
     if (!result.offers) continue;
 
@@ -207,7 +210,7 @@ if (fetchProtection) {
 
   for (const offer of toFetch) {
     try {
-      const booking = await getBookingForOffer(offer.offerMatrixId, offer.offerId, country.currency);
+      const booking = await getBookingForOffer(offer.offerMatrixId, offer.offerId, country.currency, token);
       const prot = findProtection(booking, values.protection!);
       if (prot) {
         offer.protectionDay = prot.pricePerDay;

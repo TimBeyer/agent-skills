@@ -46,6 +46,7 @@ export const searchOptions: ParseArgsConfig["options"] = {
   rate:       { type: "string", default: "" },
   campaign:   { type: "string", default: "" },
   limit:      { type: "string", default: "5" },
+  token:      { type: "string" },
   table:      { type: "boolean", default: false },
   help:       { type: "boolean", short: "h", default: false },
 };
@@ -57,6 +58,7 @@ export const bookingUrlOptions: ParseArgsConfig["options"] = {
   country:       { type: "string", default: "DE" },
   campaign:      { type: "string", default: "" },
   "station-name": { type: "string", default: "" },
+  token:         { type: "string" },
   table:         { type: "boolean", default: false },
   help:          { type: "boolean", short: "h", default: false },
 };
@@ -64,8 +66,14 @@ export const bookingUrlOptions: ParseArgsConfig["options"] = {
 export const stationsOptions: ParseArgsConfig["options"] = {
   query:   { type: "string" },
   country: { type: "string", default: "DE" },
+  token:   { type: "string" },
   table:   { type: "boolean", default: false },
   help:    { type: "boolean", short: "h", default: false },
+};
+
+export const loginOptions: ParseArgsConfig["options"] = {
+  email: { type: "string" },
+  help:  { type: "boolean", short: "h", default: false },
 };
 
 // --- Typed value shapes for each command ---
@@ -84,6 +92,7 @@ export interface SearchValues {
   rate: string;
   campaign: string;
   limit: string;
+  token?: string;
   table: boolean;
 }
 
@@ -95,6 +104,7 @@ export interface BookingUrlValues {
   country: string;
   campaign: string;
   "station-name": string;
+  token?: string;
   table: boolean;
 }
 
@@ -102,7 +112,13 @@ export interface StationsValues {
   help: boolean;
   query?: string;
   country: string;
+  token?: string;
   table: boolean;
+}
+
+export interface LoginValues {
+  help: boolean;
+  email?: string;
 }
 
 /** Parse args with the given options config. Exits on unknown flags. */

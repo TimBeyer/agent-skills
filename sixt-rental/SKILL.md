@@ -6,7 +6,7 @@ compatibility: Requires Bun runtime (bun.sh).
 
 # Sixt Rental Search
 
-Search Sixt car rental availability via their unauthenticated gRPC-web API. Scripts output JSON to stdout by default (for agent consumption) and support `--table` for human-readable output.
+Search Sixt car rental availability via their gRPC-web API. Scripts output JSON to stdout by default (for agent consumption) and support `--table` for human-readable output. Supports optional authenticated mode for member/Platinum pricing via `--token`.
 
 ## Scripts
 
@@ -60,6 +60,27 @@ Search Sixt car rental availability via their unauthenticated gRPC-web API. Scri
 | `--country` | DE | Country code |
 | `--table` | false | Human-readable table output |
 
+### Authenticate (member pricing)
+
+```bash
+TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com)
+# → sends OTP to email, prompts for code, prints JWT to stdout
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--email` | required | Sixt account email address |
+
+Pass the token to other scripts via `--token` for member/Platinum pricing:
+
+```bash
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN"
+```
+
+The token is a short-lived JWT (~5 min TTL). It is never written to disk.
+
+All three scripts (`sixt-search`, `sixt-booking-url`, `sixt-stations`) accept `--token`.
+
 ## Campaign codes
 
 | Code | Includes | Best for |
@@ -108,6 +129,15 @@ All offer fields are filterable. See `references/api.md` for the complete field 
 **Electric cars with decent range in Lisbon:**
 ```bash
 <skill-dir>/scripts/sixt-search --pickup "2026-05-16T09:00" --return "2026-05-30T09:00" --city Lisbon --country PT --filter "electric" --filter "range>=300"
+```
+
+**Authenticated vs public price comparison:**
+```bash
+TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com)
+# Authenticated (member pricing)
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN" --table
+# Public pricing (no token)
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --table
 ```
 
 **Compare Holiday vs public rate:**

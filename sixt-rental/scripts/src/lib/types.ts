@@ -120,3 +120,24 @@ export interface StationsArgs {
   country: string;
   table: boolean;
 }
+
+/** Response from requestLoginOTP */
+export interface OtpResponse {
+  otpExpiryTime: string;
+  channels: string[];
+}
+
+/** Response from verifyLoginOTP */
+export interface AuthTokenResponse {
+  accessToken: string;
+  /** Absolute Unix timestamp (epoch seconds) when the token expires */
+  expiresIn: number;
+}
+
+/** Decoded JWT payload (relevant fields only) */
+export interface JwtPayload {
+  user_id: string;
+  mnum?: number;
+  exp: number;
+  [key: string]: unknown;
+}
