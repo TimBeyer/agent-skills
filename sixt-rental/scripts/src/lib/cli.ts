@@ -39,8 +39,9 @@ export const searchOptions: ParseArgsConfig["options"] = {
   city:       { type: "string", default: "Berlin" },
   station:    { type: "string" },
   country:    { type: "string", default: "DE" },
-  electric:   { type: "boolean", default: false },
-  family:     { type: "boolean", default: false },
+  filter:     { type: "string", multiple: true },
+  electric:   { type: "boolean", default: false },  // alias for --filter "electric"
+  family:     { type: "boolean", default: false },   // alias for --filter "passengers>=5" --filter "bags>=3" --filter "automatic"
   protection: { type: "string" },
   rate:       { type: "string", default: "" },
   campaign:   { type: "string", default: "" },
@@ -76,6 +77,7 @@ export interface SearchValues {
   city: string;
   station?: string;
   country: string;
+  filter?: string[];
   electric: boolean;
   family: boolean;
   protection?: string;

@@ -4,6 +4,7 @@
 import { parse, searchOptions, validateIsoDatetime, validateDateOrder, validateCountryCode, type SearchValues } from "../lib/cli";
 import { suggestLocations, selectLocation, getOffers, getBookingForOffer, findProtection } from "../lib/client";
 import { getCountry } from "../lib/countries";
+import { parseFilter, applyFilters } from "../lib/filter";
 import { formatTable } from "../lib/format";
 import type { SixtOffer, SixtOfferWithProtection, SixtStation } from "../lib/types";
 
@@ -22,8 +23,16 @@ Options:
   --city        City name for station search (default: Berlin)
   --station     Specific station ID (skips city search)
   --country     2-letter country code (default: DE)
-  --electric    Show only electric vehicles
-  --family      Filter: 5+ seats, 3+ bags, automatic
+  --filter      Filter expression (repeatable, AND'd). Examples:
+                  --filter "electric"          boolean true
+                  --filter "!hybrid"           boolean false
+                  --filter "passengers>=5"     numeric comparison
+                  --filter "groupType=SUV"     string equality
+                Fields: electric, hybrid, automatic, luxury, guaranteed, navIncluded,
+                  passengers, bags, largeBags, smallBags, doors, minAge, range,
+                  priceDay, priceTotal, deposit, groupType, bodyStyle, acriss, ...
+  --electric    Shortcut for --filter "electric"
+  --family      Shortcut for --filter "passengers>=5" "bags>=3" "automatic"
   --protection  Fetch protection pricing: basic|smart|allinclusive
   --rate        Corporate customer number
   --campaign    Partner campaign code
@@ -47,6 +56,12 @@ validateCountryCode(values.country!);
 const country = getCountry(values.country!);
 const limit = parseInt(values.limit!, 10);
 const fetchProtection = !!values.protection && values.protection !== "none";
+
+// --- Build filters from --filter, --electric, --family ---
+const filterExprs: string[] = values.filter || [];
+if (values.electric) filterExprs.push("electric");
+if (values.family) filterExprs.push("passengers>=5", "bags>=3", "automatic");
+const filters = filterExprs.map(parseFilter);
 
 // --- Resolve stations ---
 let stations: SixtStation[];
@@ -96,30 +111,62 @@ for (const station of stations) {
 
     for (const offer of result.offers) {
       const car = offer.car_info;
+      const selectedPlan = offer.mileage_plans?.find((p) => p.is_selected);
+      const unlimitedPlan = offer.mileage_plans?.find((p) => p.is_unlimited);
+      const rangeStr = car?.full_charge_distance?.distance;
+
       const entry: SixtOffer = {
+        // Station
         station: station.name,
         stationId: station.id,
+
+        // Vehicle identity
         title: car?.title || "Unknown",
         subline: car?.subline || "",
-        electric: car?.is_electric || false,
-        hybrid: car?.is_hybrid || false,
-        automatic: car?.transmission_type?.includes("AUTOMATIC") || false,
-        passengers: car?.passengers_count || 0,
-        bags: car?.bags_count || 0,
-        doors: car?.doors_count || 0,
-        priceDay: offer.price_per_day?.gross?.value || 0,
-        priceTotal: offer.price_total?.gross?.value || 0,
-        mileage: offer.mileage_included_formatted || "",
+        acriss: (car?.acriss_codes || "").replace(/[\[\]]/g, ""),
+        groupType: car?.group_type || "",
+        bodyStyle: car?.body_style || "",
         guaranteed: car?.guaranteed_model || false,
         examples: car?.example_make_model || "",
-        acriss: (car?.acriss_codes || "").replace(/[\[\]]/g, ""),
+        imageUrl: car?.vehicle_images?.[0]?.medium_url || "",
+
+        // Vehicle specs
+        passengers: car?.passengers_count || 0,
+        bags: car?.bags_count || 0,
+        largeBags: car?.large_bags_count || 0,
+        smallBags: car?.small_bags_count || 0,
+        doors: car?.doors_count || 0,
+        automatic: car?.transmission_type?.includes("AUTOMATIC") || false,
+        navIncluded: car?.navigation_included || false,
+
+        // Powertrain
+        electric: car?.is_electric || false,
+        hybrid: car?.is_hybrid || false,
+        luxury: car?.is_luxury || false,
+        range: rangeStr ? parseInt(rangeStr, 10) : null,
+        chargingCable: car?.charging_cable_details?.description || "",
+
+        // Driver requirements
+        minAge: car?.minimum_driver_age || 18,
+        youngDriverFee: offer.is_young_driver_fee_applied || false,
+
+        // Pricing
+        priceDay: offer.price_per_day?.gross?.value || 0,
+        priceTotal: offer.price_total?.gross?.value || 0,
+        deposit: offer.deposit?.value || 0,
+        mileage: offer.mileage_included_formatted || "",
+        extraKmPrice: selectedPlan?.extra_mileage_amount?.gross?.value ?? null,
+        unlimitedKmAvailable: !!unlimitedPlan,
+        unlimitedKmPriceTotal: unlimitedPlan?.total_amount?.gross?.value ?? null,
+
+        // Presentation
+        rentalDays: offer.calculated_rental_days || 0,
+        promoLabel: offer.promo_label || "",
+
+        // Internal
         offerId: offer.offer_id,
         offerMatrixId: offer.offer_matrix_id,
       };
-
-      // Apply filters early
-      if (values.electric && !entry.electric) continue;
-      if (values.family && !(entry.passengers >= 5 && entry.bags >= 3 && entry.automatic)) continue;
 
       allOffers.push(entry);
     }
@@ -129,7 +176,10 @@ for (const station of stations) {
   }
 }
 
-if (allOffers.length === 0) {
+// --- Apply filters ---
+const filtered = applyFilters(allOffers, filters);
+
+if (filtered.length === 0) {
   if (values.table) {
     console.log("No offers found matching your criteria.");
   } else {
@@ -139,10 +189,10 @@ if (allOffers.length === 0) {
 }
 
 // --- Sort by base price first ---
-allOffers.sort((a, b) => a.priceTotal - b.priceTotal);
+filtered.sort((a, b) => a.priceTotal - b.priceTotal);
 
 // --- Fetch protection for top N offers only (fixes N+1 problem) ---
-const enriched: SixtOfferWithProtection[] = allOffers.map((o) => ({
+const enriched: SixtOfferWithProtection[] = filtered.map((o) => ({
   ...o,
   protectionDay: null,
   protectionTotal: null,
@@ -182,8 +232,7 @@ if (values.table) {
   console.log(`\nFound ${enriched.length} offers across ${stations.length} station(s)`);
   console.log(`Pickup: ${values.pickup} | Return: ${values.return} | Country: ${country.code}`);
   if (fetchProtection) console.log(`Protection: ${values.protection} (included in prices)`);
-  const filters = [values.electric ? "Electric only" : "", values.family ? "Family mode" : ""].filter(Boolean);
-  if (filters.length) console.log(`Filters: ${filters.join(", ")}`);
+  if (filterExprs.length) console.log(`Filters: ${filterExprs.join(", ")}`);
   console.log("");
   console.log(formatTable(enriched, country.currency, fetchProtection));
 } else {

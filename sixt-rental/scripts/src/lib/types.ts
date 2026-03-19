@@ -17,22 +17,54 @@ export interface SixtStation {
 
 /** A car rental offer from GetOfferRecommendationsV2 */
 export interface SixtOffer {
+  // Station
   station: string;
   stationId: string;
+
+  // Vehicle identity
   title: string;
   subline: string;
-  electric: boolean;
-  hybrid: boolean;
-  automatic: boolean;
-  passengers: number;
-  bags: number;
-  doors: number;
-  priceDay: number;
-  priceTotal: number;
-  mileage: string;
+  acriss: string;
+  groupType: string;
+  bodyStyle: string;
   guaranteed: boolean;
   examples: string;
-  acriss: string;
+  imageUrl: string;
+
+  // Vehicle specs
+  passengers: number;
+  bags: number;
+  largeBags: number;
+  smallBags: number;
+  doors: number;
+  automatic: boolean;
+  navIncluded: boolean;
+
+  // Powertrain
+  electric: boolean;
+  hybrid: boolean;
+  luxury: boolean;
+  range: number | null;
+  chargingCable: string;
+
+  // Driver requirements
+  minAge: number;
+  youngDriverFee: boolean;
+
+  // Pricing
+  priceDay: number;
+  priceTotal: number;
+  deposit: number;
+  mileage: string;
+  extraKmPrice: number | null;
+  unlimitedKmAvailable: boolean;
+  unlimitedKmPriceTotal: number | null;
+
+  // Presentation
+  rentalDays: number;
+  promoLabel: string;
+
+  // Internal (stripped from JSON output)
   offerId: string;
   offerMatrixId: string;
 }

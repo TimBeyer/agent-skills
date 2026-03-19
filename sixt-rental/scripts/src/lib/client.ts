@@ -70,17 +70,37 @@ export async function getOffers(
         subline?: string;
         is_electric?: boolean;
         is_hybrid?: boolean;
+        is_luxury?: boolean;
         transmission_type?: string;
         passengers_count?: number;
         bags_count?: number;
+        large_bags_count?: number;
+        small_bags_count?: number;
         doors_count?: number;
         guaranteed_model?: boolean;
         example_make_model?: string;
         acriss_codes?: string;
+        group_type?: string;
+        body_style?: string;
+        minimum_driver_age?: number;
+        navigation_included?: boolean;
+        full_charge_distance?: { distance?: string; distance_unit?: string };
+        charging_cable_details?: { included?: boolean; label?: string; description?: string };
+        vehicle_images?: Array<{ small_url?: string; medium_url?: string; large_url?: string }>;
       };
       price_per_day?: { gross?: { value?: number } };
       price_total?: { gross?: { value?: number } };
+      deposit?: { value?: number };
       mileage_included_formatted?: string;
+      calculated_rental_days?: number;
+      promo_label?: string;
+      is_young_driver_fee_applied?: boolean;
+      mileage_plans?: Array<{
+        is_selected?: boolean;
+        is_unlimited?: boolean;
+        total_amount?: { gross?: { value?: number } };
+        extra_mileage_amount?: { gross?: { value?: number } };
+      }>;
     }>;
   }>("/com.sixt.service.rent_booking.api.BookingService/GetOfferRecommendationsV2", {
     offer_matrix_id: crypto.randomUUID(),

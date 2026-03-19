@@ -23,8 +23,9 @@ Search Sixt car rental availability via their unauthenticated gRPC-web API. Scri
 | `--city` | Berlin | City name for station search |
 | `--station` | — | Specific station ID (skips city search) |
 | `--country` | DE | 2-letter country code (affects API params, currency, booking domain) |
-| `--electric` | false | Show only electric vehicles |
-| `--family` | false | Filter: 5+ seats, 3+ bags, automatic |
+| `--filter` | — | Filter expression (repeatable, AND'd). See examples below |
+| `--electric` | false | Shortcut for `--filter "electric"` |
+| `--family` | false | Shortcut for `--filter "passengers>=5" "bags>=3" "automatic"` |
 | `--protection` | — | Fetch protection pricing: `basic` / `smart` / `allinclusive` |
 | `--limit` | 5 | Max offers to fetch protection for (0 = all) |
 | `--rate` | — | Corporate customer number |
@@ -68,11 +69,45 @@ Search Sixt car rental availability via their unauthenticated gRPC-web API. Scri
 
 Holiday rate prices include all insurance — compare the Holiday total against public base + protection to see real savings.
 
+## Filtering
+
+`--filter` takes an expression. Repeatable — multiple filters are AND'd.
+
+```bash
+# Boolean filters
+--filter "electric"              # electric vehicles only
+--filter "!hybrid"               # exclude hybrids
+--filter "automatic"             # automatic transmission
+--filter "luxury"                # luxury class
+
+# Numeric comparisons
+--filter "passengers>=5"         # 5+ seats
+--filter "range>=400"            # EV range ≥ 400 km
+--filter "priceTotal<=500"       # max total price
+--filter "minAge<=21"            # available for young drivers
+
+# String equality (case-insensitive)
+--filter "groupType=SUV"         # SUVs only (SEDAN, VAN, CONVERTIBLE, STATION_WAGON)
+--filter "bodyStyle!=Van"        # exclude vans
+```
+
+All offer fields are filterable. See `references/api.md` for the complete field list with types and examples.
+
 ## Common workflows
 
 **Compare stations in a city:**
 ```bash
 <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --city Berlin --table
+```
+
+**Automatic SUVs with 5+ seats:**
+```bash
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --filter "groupType=SUV" --filter "automatic" --filter "passengers>=5"
+```
+
+**Electric cars with decent range in Lisbon:**
+```bash
+<skill-dir>/scripts/sixt-search --pickup "2026-05-16T09:00" --return "2026-05-30T09:00" --city Lisbon --country PT --filter "electric" --filter "range>=300"
 ```
 
 **Compare Holiday vs public rate:**
@@ -84,18 +119,13 @@ Holiday rate prices include all insurance — compare the Holiday total against 
 <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --protection smart
 ```
 
-**Find electric cars in Lisbon:**
-```bash
-<skill-dir>/scripts/sixt-search --pickup "2026-05-16T09:00" --return "2026-05-30T09:00" --city Lisbon --country PT --electric
-```
-
 ## Reference files
 
 Load these when you need deeper context:
 
 | File | When to load |
 |------|-------------|
-| `references/api.md` | Debugging API issues, understanding request/response fields |
+| `references/api.md` | Full offer field reference (types, examples), `--filter` syntax, API endpoints |
 | `references/pricing.md` | Advising on pricing strategy, explaining campaign codes |
 | `references/stations.md` | Quick station ID lookup without running the stations script |
 | `references/cross-border.md` | Which ACRISS categories can enter which countries (zone restrictions) |
