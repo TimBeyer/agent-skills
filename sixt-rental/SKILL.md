@@ -62,14 +62,22 @@ Search Sixt car rental availability via their gRPC-web API. Scripts output JSON 
 
 ### Authenticate (member pricing)
 
+Two-step non-interactive flow (designed for agent use):
+
 ```bash
-TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com)
-# → sends OTP to email, prompts for code, prints JWT to stdout
+# Step 1: Request OTP (outputs session handle)
+SESSION=$(<skill-dir>/scripts/sixt-login --email user@example.com)
+# → sends OTP to email, ask user for the 6-digit code
+
+# Step 2: Verify OTP (outputs JWT)
+TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com --otp 123456 --session "$SESSION")
 ```
 
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--email` | required | Sixt account email address |
+| `--otp` | — | 6-digit OTP code (triggers verify step) |
+| `--session` | — | Session handle from step 1 (required with `--otp`) |
 
 Pass the token to other scripts via `--token` for member/Platinum pricing:
 
@@ -133,7 +141,9 @@ All offer fields are filterable. See `references/api.md` for the complete field 
 
 **Authenticated vs public price comparison:**
 ```bash
-TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com)
+SESSION=$(<skill-dir>/scripts/sixt-login --email user@example.com)
+# → ask user for OTP code
+TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com --otp <code> --session "$SESSION")
 # Authenticated (member pricing)
 <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN" --table
 # Public pricing (no token)

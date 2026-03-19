@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { decodeJwtPayload, getUserId } from "../lib/auth";
+import { decodeJwtPayload, getUserId, createSession, encodeSession, decodeSession } from "../lib/auth";
 
 // Build a fake JWT with the given payload (no signature verification needed)
 function fakeJwt(payload: Record<string, unknown>): string {
@@ -68,5 +68,27 @@ describe("getUserId", () => {
   test("throws when user_id is missing", () => {
     const token = fakeJwt({ exp: 123 });
     expect(() => getUserId(token)).toThrow("missing user_id");
+  });
+});
+
+describe("session encode/decode", () => {
+  test("round-trips a session", () => {
+    const session = createSession();
+    const handle = encodeSession(session);
+    const decoded = decodeSession(handle);
+    expect(decoded).toEqual(session);
+  });
+
+  test("handle is a non-empty string", () => {
+    const handle = encodeSession(createSession());
+    expect(typeof handle).toBe("string");
+    expect(handle.length).toBeGreaterThan(0);
+  });
+
+  test("createSession generates unique IDs", () => {
+    const a = createSession();
+    const b = createSession();
+    expect(a.browserId).not.toBe(b.browserId);
+    expect(a.stableId).not.toBe(b.stableId);
   });
 });

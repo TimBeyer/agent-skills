@@ -72,8 +72,10 @@ export const stationsOptions: ParseArgsConfig["options"] = {
 };
 
 export const loginOptions: ParseArgsConfig["options"] = {
-  email: { type: "string" },
-  help:  { type: "boolean", short: "h", default: false },
+  email:   { type: "string" },
+  otp:     { type: "string" },
+  session: { type: "string" },
+  help:    { type: "boolean", short: "h", default: false },
 };
 
 // --- Typed value shapes for each command ---
@@ -119,6 +121,8 @@ export interface StationsValues {
 export interface LoginValues {
   help: boolean;
   email?: string;
+  otp?: string;
+  session?: string;
 }
 
 /** Parse args with the given options config. Exits on unknown flags. */
