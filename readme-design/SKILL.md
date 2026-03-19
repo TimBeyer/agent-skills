@@ -50,7 +50,7 @@ Markdown has a richer design vocabulary than most people use. Push beyond header
 
 ### Interactive & Structural Elements
 
-- **Collapsible sections** (`<details>`/`<summary>`): The single most underused GFM feature. Perfect for keeping the main flow clean while offering depth. Use for: advanced configuration, full API references, troubleshooting, platform-specific instructions, verbose examples, changelogs.
+- **Collapsible sections** (`<details>`/`<summary>`): Useful for adding depth without dominating the page. Use for: verbose examples, platform-specific instructions, advanced configuration, implementation details. But don't hide things people scan for — instance configuration, setup steps, and key workflows should be visible headings, not collapsed. Collapsible is for depth *within* a section, not for tucking away entire topics. If someone scanning the page would want to find it, keep it visible.
   ```html
   <details>
   <summary><strong>Advanced configuration</strong></summary>
