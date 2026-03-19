@@ -12,6 +12,10 @@ Design engaging, visually distinctive README.md files. Guides the agent through 
 
 Create automated terminal recordings for README demos and documentation. Uses tmux + asciinema + agg for clean, reproducible GIF recordings with no flashing artifacts. Offers two paths: manual recording for exploration, or storyboard-driven scripted automation.
 
+### `sixt-rental`
+
+Search Sixt car rental availability and prices across stations via their gRPC-web API. Compare offers across cities, filter by electric/family vehicles, fetch protection pricing, generate booking URLs, and apply partner campaign codes for discounted rates. TypeScript + Bun scripts with JSON-first output.
+
 ## License
 
 MIT
