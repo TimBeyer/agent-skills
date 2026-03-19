@@ -62,11 +62,34 @@ Markdown has a richer design vocabulary than most people use. Push beyond header
 - **Anchor-linked table of contents**: For longer READMEs, a well-structured TOC is navigation infrastructure, not decoration. Consider which sections are top-level vs nested — the TOC hierarchy itself communicates importance.
 - **Linked section headers**: Cross-reference between sections to create a web of understanding rather than a linear scroll.
 
+### HTML in Markdown
+
+GitHub renders a subset of HTML that enables layouts markdown can't express. Use these when markdown tables or plain flow aren't enough:
+
+- **Multi-column layouts**: Use `<table>` with `<td width="33%">` for side-by-side content (feature cards, comparison grids, download matrices). This is the only way to do true columns in GitHub markdown.
+  ```html
+  <table><tr>
+    <td width="50%" valign="top"><h4>Feature A</h4>Description...</td>
+    <td width="50%" valign="top"><h4>Feature B</h4>Description...</td>
+  </tr></table>
+  ```
+- **Platform download matrix**: For projects with platform-specific installs, a table with OS names as rows and architecture variants as cells is far more scannable than a list of links.
+- **Centered content**: `<div align="center">` or `<p align="center">` for logos, banners, taglines, badge groups. Centering signals "this is a hero element, not body text."
+- **Dark/light mode images**: Use `<picture>` with `<source media="(prefers-color-scheme: dark)">` to serve different images for dark and light GitHub themes. For SVG icons, `style="filter: invert(1)"` can adapt a single image without maintaining two variants.
+
 ### Visual Polish
 
-- **Centered content**: Use `<div align="center">` for logos, project banners, taglines, or badge groups. Centering signals "this is a hero element, not body text."
-- **Dark/light mode images**: Use `<picture>` with `<source media="(prefers-color-scheme: dark)">` to serve different images for dark and light GitHub themes.
 - **Syntax-highlighted code blocks**: Always specify the language. Show real, runnable examples — never pseudocode in a quickstart.
+- **Diff-formatted code blocks**: For tools that integrate into existing projects (plugins, config, CI), use the `diff` language identifier to show exactly what the user adds:
+  ````
+  ```diff
+    "scripts": {
+  +   "lint": "my-tool --check .",
+      "test": "vitest"
+    }
+  ```
+  ````
+  This answers "what do I change?" rather than "what does the whole file look like?"
 - **Blockquotes for callouts**: GitHub renders these as styled callouts with special syntax:
   ```
   > [!NOTE]
@@ -92,14 +115,23 @@ Markdown has a richer design vocabulary than most people use. Push beyond header
 A great README answers these questions, roughly in this order. Adapt to the structural direction chosen:
 
 1. **What is this?** — One or two crisp sentences. This is the hardest and most important line in the entire README — spend time getting it right before moving on.
-2. **Why should I care?** — The problem it solves, not a feature list. Features describe "what"; motivation explains "why someone would choose this."
-3. **Show me** — A code snippet, screenshot, diagram, or terminal recording. Proof it works, not a promise that it does. This should appear before the reader has to scroll much. For CLI tools and TUI apps, a GIF of the tool in action is far more compelling than describing what it does. If the `terminal-recording` skill is available, use it to guide the user through creating an automated, reproducible demo recording.
-4. **How do I start?** — Fastest path from zero to working. Ideally 1-3 commands. This must be a single path — the simplest one. Alternative workflows (headless mode, config files, Docker, etc.) are not quickstart material; they belong further down or in their own doc. A quickstart with options is a quickstart that confuses. The reader should be able to copy-paste and go.
+2. **Why should I care?** — The problem it solves, not a feature list. Features describe "what"; motivation explains "why someone would choose this." If there are well-known alternatives, a brief comparison of *approach* (not named competitors, which ages poorly) can crystallize the value proposition faster than any feature list.
+3. **Show me** — A code snippet, screenshot, diagram, or terminal recording. Proof it works, not a promise that it does. This should appear before the reader has to scroll much. Different project types benefit from different visual strategies: CLI tools need "watch me solve this in 10 seconds" workflow GIFs; visual tools need feature-gallery screenshots; API tools need before/after comparisons or clean code examples. If the `terminal-recording` skill is available, use it to create automated, reproducible demo recordings for CLI/TUI tools.
+4. **How do I start?** — Fastest path from zero to working. Ideally 1-3 commands. This should be a single path — the simplest one. The reader should be able to copy-paste and go. If the project genuinely serves different audiences with different setup paths (e.g., "JS apps" vs "libraries" vs "frameworks"), use collapsible sections as path selectors — the reader picks their category, then follows one clear trail. The anti-pattern is mixing paths together, not having multiple paths.
 5. **How does it work?** — Architecture, key concepts, mental model. Only include this in a product README if it helps users understand what they're getting — not as an internal deep-dive. For contributor-facing architecture, link to a separate doc.
 6. **What else can it do?** — Deeper features, configuration, advanced usage. Collapsible sections shine here — present the depth without overwhelming the surface.
 7. **How do I participate?** — Contributing guidelines, community links, license. Keep this light in the README; link to CONTRIBUTING.md for depth.
 
 Not every README needs all seven. A small utility might need 1-4. A platform needs all of them with depth. Match documentation weight to project weight.
+
+## Content Patterns
+
+Patterns that apply to specific project types — use when relevant:
+
+- **Ecosystem / integrations**: For projects that are part of a toolkit, have a plugin system, or integrate with specific tools, an "Integrations" or "Ecosystem" section (as a table, not a list) answers "what does this work with?" This is especially valuable for modular projects.
+- **Config examples linked to source**: When showing configuration, link to the actual config file or schema in the repo. This creates a self-documenting loop and tells the reader "this is real, here's where it lives."
+- **Social proof with evidence**: A "Used By" section earns its place when it shows *outcomes*, not just logos. Link to commits, benchmarks, or dependency graphs. "PostCSS reduced size by 25% (link to commit)" beats a wall of company logos.
+- **Troubleshooting as collapsible**: Troubleshooting sections are ideal for `<details>` — irrelevant to most readers but critical for a few. End with a welcoming "still stuck? open an issue" link.
 
 ## Anti-Patterns
 
