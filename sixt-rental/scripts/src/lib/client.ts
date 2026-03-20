@@ -1,20 +1,8 @@
 // Sixt gRPC-web API client using native fetch
 
 import type { CountryConfig, SixtProtection } from "./types";
-import { getUserId } from "./auth";
 
 const GRPC = "https://grpc-prod.orange.sixt.com";
-
-/** Extract user_id from token, caching to avoid repeated decoding */
-let cachedToken: string | undefined;
-let cachedUserId: string | undefined;
-function getUserIdFromToken(token: string): string {
-  if (token !== cachedToken) {
-    cachedToken = token;
-    cachedUserId = getUserId(token);
-  }
-  return cachedUserId!;
-}
 
 /** POST JSON to a Sixt gRPC-web endpoint */
 async function grpcPost<T>(endpoint: string, body: Record<string, unknown>, token?: string): Promise<T> {
@@ -38,7 +26,6 @@ async function grpcPost<T>(endpoint: string, body: Record<string, unknown>, toke
 
 /** Search for locations matching a query string */
 export async function suggestLocations(query: string, token?: string) {
-  const userProfileId = token ? getUserIdFromToken(token) : "";
   return grpcPost<{
     suggestions?: Array<{
       location?: {
@@ -51,7 +38,7 @@ export async function suggestLocations(query: string, token?: string) {
     query,
     auto_complete_session_id: crypto.randomUUID(),
     vehicle_type: "1",
-    user_profile_id: userProfileId,
+    user_profile_id: "",
     location_purpose: 1,
     include_fastlane: null,
   }, token);
@@ -59,12 +46,11 @@ export async function suggestLocations(query: string, token?: string) {
 
 /** Resolve a branch ID to a location_selection_id */
 export async function selectLocation(branchId: string, country: CountryConfig, token?: string) {
-  const userProfileId = token ? getUserIdFromToken(token) : "";
   return grpcPost<{
     location_selection_id?: string;
     selected_location?: { title?: string };
   }>("/com.sixt.service.rent_booking.api.SearchService/SelectLocation", {
-    user_profile_id: userProfileId,
+    user_profile_id: "",
     location_purpose: 1,
     vehicle_type: 1,
     auto_complete_session_id: crypto.randomUUID(),
@@ -82,7 +68,6 @@ export async function getOffers(
   country: CountryConfig,
   opts: { corporateRate?: string; campaign?: string; token?: string } = {},
 ) {
-  const userProfileId = opts.token ? getUserIdFromToken(opts.token) : "";
   return grpcPost<{
     offers?: Array<{
       offer_id: string;
@@ -134,7 +119,7 @@ export async function getOffers(
       point_of_sale: country.pointOfSale,
       return_datetime: { value: ret },
       vehicle_type: 10,
-      user_profile_id: userProfileId,
+      user_profile_id: "",
       corporate_customer_number: opts.corporateRate || "",
       sim_card_country_code: country.code,
       device_location_country_code: country.code,
