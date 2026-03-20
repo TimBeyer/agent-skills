@@ -6,7 +6,7 @@ compatibility: Requires Bun runtime (bun.sh).
 
 # Sixt Rental Search
 
-Search Sixt car rental availability via their gRPC-web API. Scripts output JSON to stdout by default (for agent consumption) and support `--table` for human-readable output. Supports optional authenticated mode for member/Platinum pricing via `--token`.
+Search Sixt car rental availability via their gRPC-web API. Always use the default JSON output — parse it and format results yourself based on what the user asked. `--table` exists for developers running scripts by hand; do not use it. Supports optional authenticated mode for member/Platinum pricing via `--token`.
 
 ## Scripts
 
