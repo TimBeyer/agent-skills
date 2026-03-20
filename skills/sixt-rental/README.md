@@ -1,46 +1,41 @@
 # sixt-rental
 
-An [Agent Skill](https://agentskills.io) that lets AI agents search Sixt car rental availability, compare prices across stations, and generate booking links. The agent gets structured JSON with 30+ fields per offer — vehicle specs, pricing, powertrain, mileage limits — and can filter, sort, and reason over the results.
+Give your AI agent the ability to search Sixt rental cars — across every station in a city, all at once.
 
 ```
-User: "Find me an electric car in Berlin for next weekend, under €100/day"
+You:   "I need a car in Berlin next weekend. Something electric, under €100/day."
 
-Agent: searches 15 stations, filters by electric + priceDay<=100, returns:
+Agent:  Found 4 electric cars at Berlin Flughafen:
 
-  Citroen e-C3         €66.65/day  326km range  Berlin Flughafen
-  Citroen e-C3 Aircross  €84.32/day  400km range  Berlin Flughafen
+        Citroen e-C3              €66.65/day   326 km range
+        Citroen e-C3 Aircross    €84.32/day   400 km range
+        Skoda Elroq             €111.99/day   360 km range
+
+        Want me to check other Berlin stations too, or generate a booking link?
 ```
 
-## What the agent can do
+## Why this skill
 
-**Search and compare** — query by city (searches all stations) or specific station ID. Every offer comes back as a JSON object with vehicle details, pricing, specs, and availability:
+**Your agent searches like you can't.** On sixt.de you pick one station and scroll through results. This skill searches every station in a city simultaneously and compares prices side by side. Berlin has 15 Sixt stations — the price difference between airport and city center can be 30-40% for the same car.
 
-```json
-{
-  "title": "Citroen e-C3",
-  "priceDay": 66.65,
-  "priceTotal": 199.96,
-  "electric": true,
-  "range": 326,
-  "passengers": 5,
-  "automatic": true,
-  "deposit": 300,
-  "mileage": "900 kilometers included",
-  "station": "Berlin Flughafen"
-}
-```
+**It knows about discounts you don't.** Built-in partner campaign codes bundle zero-deductible insurance, extra driver, unlimited kilometers, and free cancellation into the price. Your agent can compare the all-inclusive deal against the public rate plus add-on insurance to show you which actually costs less.
 
-**Filter** — offers are filterable with expressions: `"electric"`, `"passengers>=5"`, `"groupType=SUV"`, `"priceTotal<=500"`, `"!hybrid"`. Multiple filters AND together. All 30+ offer fields are filterable.
+**It filters by what you actually care about.** Need 5+ seats with room for luggage? Only electric cars with 300+ km range? SUVs under €150/day? Automatic only? The agent narrows results down instead of making you scroll.
 
-**Protection pricing** — fetch insurance package costs (basic, smart, all-inclusive) with deductibles, so the agent can compare total cost of ownership, not just the base rate.
+**It handles the insurance question.** Rental car insurance is confusing. The skill can fetch exact protection pricing — basic, smart, or all-inclusive — so your agent can compare total cost, not just the sticker price.
 
-**Campaign codes** — apply partner discount codes that bundle insurance, extra driver, and unlimited km into the price. The agent can compare bundled vs. base+extras to find real savings.
+## What your agent can do with it
 
-**Member pricing** — authenticate via email OTP to get Platinum/Gold member rates. Discounts scale with car class: ~5% economy, ~10% mid-range, ~15% luxury.
-
-**Booking links** — generate pre-filled Sixt booking URLs with station, dates, and campaign baked in. Hand the user a link they can click to book.
-
-**Multi-country** — works across Sixt markets (DE, PT, ES, etc.) with localized currency and booking domains.
+| Capability | Example |
+|---|---|
+| **Search a city** | "Find rental cars in Lisbon for May 16-30" |
+| **Filter results** | "Only SUVs with 5+ passengers and automatic" |
+| **Compare stations** | "Which Berlin station has the cheapest compact?" |
+| **Find electric cars** | "Electric cars with at least 300km range" |
+| **Apply discounts** | "Check the Holiday rate vs public price" |
+| **Get member pricing** | "Log in to my Sixt account for Platinum rates" |
+| **Generate booking links** | "Give me a link to book that VW Golf" |
+| **Multi-country** | Works across Sixt markets — Germany, Portugal, Spain, and more |
 
 ## Install
 
@@ -48,24 +43,18 @@ Agent: searches 15 stations, filters by electric + priceDay<=100, returns:
 npx skills add TimBeyer/agent-skills --skill sixt-rental
 ```
 
-Requires [Bun](https://bun.sh). Dependencies auto-install on first run — no setup needed.
+Requires [Bun](https://bun.sh). Dependencies install automatically on first run.
 
-## Scripts
+---
 
-| Script | What the agent gets |
-|--------|-------------------|
-| `sixt-search` | JSON array of offers with pricing, vehicle specs, powertrain, mileage, deposit, station |
-| `sixt-stations` | JSON array of `{id, name}` for all stations matching a city query |
-| `sixt-booking-url` | JSON with a pre-filled Sixt booking URL and metadata |
-| `sixt-login` | Two-step email OTP flow → JWT token for member pricing |
+<details>
+<summary><strong>For contributors</strong></summary>
 
-All scripts output JSON to stdout. Pass `--table` for human-readable output. Run any script with `--help` for full usage.
+TypeScript + Bun. Four scripts behind shell wrappers in `scripts/`. Shared library in `src/lib/` talks to Sixt's gRPC-web API. 65 tests.
 
-## How it works
+See [src/README.md](src/README.md) for architecture, API flow, and development setup.
 
-The scripts talk to Sixt's gRPC-web API (`grpc-prod.orange.sixt.com`). A city search resolves station IDs, then fetches offers from each station in parallel. No API key needed — the same endpoints that power sixt.de.
-
-For internals — API flow, module architecture, and development setup — see [src/README.md](src/README.md).
+</details>
 
 ## License
 
