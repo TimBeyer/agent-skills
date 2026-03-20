@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BIN_DIR="$PROJECT_DIR/bin"
+BIN_DIR="$PROJECT_DIR/src/bin"
 
 for src in "$BIN_DIR"/sixt-*.ts; do
   name="$(basename "$src" .ts)"
@@ -11,4 +11,4 @@ for src in "$BIN_DIR"/sixt-*.ts; do
   bun build --compile "$src" --outfile "$BIN_DIR/$name"
 done
 
-echo "Done. Compiled binaries in bin/"
+echo "Done. Compiled binaries in src/bin/"

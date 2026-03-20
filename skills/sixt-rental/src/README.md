@@ -1,6 +1,6 @@
 # sixt-rental
 
-TypeScript + Bun project powering the [`sixt-rental`](../../SKILL.md) agent skill. Talks to Sixt's unauthenticated gRPC-web API to search rental offers, compare prices across stations, and generate booking URLs.
+TypeScript + Bun project powering the [`sixt-rental`](../SKILL.md) agent skill. Talks to Sixt's unauthenticated gRPC-web API to search rental offers, compare prices across stations, and generate booking URLs.
 
 ## API flow
 
@@ -49,10 +49,11 @@ Pass `--help` to any script for full usage.
 ## Project structure
 
 ```
-bin/          Entry points (shebanged, runnable with bun)
-lib/          Shared library modules
-test/         Unit tests (bun test)
-build.sh      Compile to standalone binaries (bun build --compile)
+src/
+  bin/          Entry points (shebanged, runnable with bun)
+  lib/          Shared library modules
+  test/         Unit tests (bun test)
+build.sh        Compile to standalone binaries (bun build --compile)
 ```
 
 ### `lib/`
@@ -85,7 +86,7 @@ Tests cover the pure-logic modules (`cli`, `client.findProtection`, `countries`,
 <details>
 <summary><strong>Adding a country</strong></summary>
 
-Add an entry to the `countries` map in `lib/countries.ts`:
+Add an entry to the `countries` map in `src/lib/countries.ts`:
 
 ```typescript
 XX: { code: "XX", pointOfSale: "XX", currency: "EUR", domain: "sixt.xx", locale: "xx-XX" },
@@ -102,7 +103,7 @@ This propagates everywhere — API params, currency formatting, and booking URL 
 ./build.sh
 ```
 
-Produces native executables in `bin/` (~50MB each, embeds Bun runtime). The shell wrappers in `../` can be updated to use these instead of `bun run`.
+Produces native executables in `src/bin/` (~50MB each, embeds Bun runtime). The shell wrappers in `scripts/` can be updated to use these instead of `bun run`.
 
 </details>
 
@@ -111,12 +112,18 @@ Produces native executables in `bin/` (~50MB each, embeds Bun runtime). The shel
 ```
 sixt-rental/
 ├── SKILL.md              ← Agent-facing skill definition
+├── package.json
+├── build.sh
 ├── references/           ← On-demand docs (API, pricing, station IDs)
-└── scripts/
-    ├── sixt-search       ← Shell wrappers (stable interface)
-    ├── sixt-booking-url
-    ├── sixt-stations
-    └── src/              ← You are here (the TS project)
+├── scripts/
+│   ├── sixt-search       ← Shell wrappers (stable interface)
+│   ├── sixt-booking-url
+│   ├── sixt-stations
+│   └── sixt-login
+└── src/                  ← You are here (the TS project)
+    ├── bin/
+    ├── lib/
+    └── test/
 ```
 
-The shell wrappers in `scripts/` are the skill's public interface — they `exec bun src/bin/<name>.ts "$@"`. SKILL.md references those wrappers. This decouples the skill's contract from the project's internal layout, so refactoring here doesn't break the skill.
+The shell wrappers in `scripts/` are the skill's public interface — they `exec bun ../src/bin/<name>.ts "$@"`. SKILL.md references those wrappers. This decouples the skill's contract from the project's internal layout, so refactoring here doesn't break the skill.

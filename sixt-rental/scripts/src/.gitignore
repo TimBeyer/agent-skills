@@ -1,6 +1,0 @@
-node_modules/
-
-# Compiled binaries from build.sh
-bin/sixt-search
-bin/sixt-booking-url
-bin/sixt-stations

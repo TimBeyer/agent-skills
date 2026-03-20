@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["lib/**/*.ts", "bin/**/*.ts", "test/**/*.ts"]
+  "include": ["src/lib/**/*.ts", "src/bin/**/*.ts", "src/test/**/*.ts"]
 }
