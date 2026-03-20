@@ -307,6 +307,20 @@ ecosystem, so the directory boundary is the only exclusion mechanism.
 Each skill is fully independent. No cross-skill imports. If a script needs
 code from another skill, publish it as an npm package.
 
+### Local skill discovery during development
+
+Skills live in `skills/`, but you may expect them at a different
+well-known path (e.g., `.claude/skills/` for Claude Code). When
+developing skills in this repo, if the skills directory is not already
+symlinked to where you resolve skills from, create a relative symlink:
+
+```bash
+# Example for Claude Code:
+ln -s ../skills .claude/skills
+```
+
+Use a **relative** path so it works for every contributor.
+
 ## Adding a new skill
 
 ### Documentation-only
