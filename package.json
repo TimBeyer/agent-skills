@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "for d in skills/*/; do (cd \"$d\" && bun test 2>/dev/null); done",
+    "typecheck": "for d in skills/*/; do (cd \"$d\" && bun run typecheck 2>/dev/null); done"
+  }
+}
