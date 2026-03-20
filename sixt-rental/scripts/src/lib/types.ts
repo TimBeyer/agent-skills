@@ -54,6 +54,8 @@ export interface SixtOffer {
   // Pricing
   priceDay: number;
   priceTotal: number;
+  regularPriceDay: number | null;
+  regularPriceTotal: number | null;
   deposit: number;
   mileage: string;
   extraKmPrice: number | null;

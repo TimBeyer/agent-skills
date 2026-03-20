@@ -156,6 +156,8 @@ for (const station of stations) {
         // Pricing
         priceDay: offer.price_per_day?.gross?.value || 0,
         priceTotal: offer.price_total?.gross?.value || 0,
+        regularPriceDay: offer.crossedout_price_per_day?.gross?.value ?? null,
+        regularPriceTotal: offer.crossedout_price_total?.gross?.value ?? null,
         deposit: offer.deposit?.value || 0,
         mileage: offer.mileage_included_formatted || "",
         extraKmPrice: selectedPlan?.extra_mileage_amount?.gross?.value ?? null,

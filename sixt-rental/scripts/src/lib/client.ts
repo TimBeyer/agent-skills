@@ -1,8 +1,21 @@
 // Sixt gRPC-web API client using native fetch
 
 import type { CountryConfig, SixtProtection } from "./types";
+import { decodeJwtPayload } from "./auth";
 
 const GRPC = "https://grpc-prod.orange.sixt.com";
+
+/** Extract mnum (membership number) from JWT for use as user_profile_id */
+let cachedToken: string | undefined;
+let cachedMnum: string | undefined;
+function getMnumFromToken(token: string): string {
+  if (token !== cachedToken) {
+    cachedToken = token;
+    const payload = decodeJwtPayload(token);
+    cachedMnum = payload.mnum != null ? String(payload.mnum) : "";
+  }
+  return cachedMnum!;
+}
 
 /** POST JSON to a Sixt gRPC-web endpoint */
 async function grpcPost<T>(endpoint: string, body: Record<string, unknown>, token?: string): Promise<T> {
@@ -12,6 +25,10 @@ async function grpcPost<T>(endpoint: string, body: Record<string, unknown>, toke
   };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
+    headers["sx-platform"] = "web-next";
+    headers["x-client-type"] = "web";
+    headers["x-sx-tenant"] = "6";
+    headers["x-correlation-id"] = crypto.randomUUID();
   }
   const res = await fetch(`${GRPC}${endpoint}`, {
     method: "POST",
@@ -38,7 +55,7 @@ export async function suggestLocations(query: string, token?: string) {
     query,
     auto_complete_session_id: crypto.randomUUID(),
     vehicle_type: "1",
-    user_profile_id: "",
+    user_profile_id: token ? getMnumFromToken(token) : "",
     location_purpose: 1,
     include_fastlane: null,
   }, token);
@@ -50,7 +67,7 @@ export async function selectLocation(branchId: string, country: CountryConfig, t
     location_selection_id?: string;
     selected_location?: { title?: string };
   }>("/com.sixt.service.rent_booking.api.SearchService/SelectLocation", {
-    user_profile_id: "",
+    user_profile_id: token ? getMnumFromToken(token) : "",
     location_purpose: 1,
     vehicle_type: 1,
     auto_complete_session_id: crypto.randomUUID(),
@@ -97,6 +114,8 @@ export async function getOffers(
       };
       price_per_day?: { gross?: { value?: number } };
       price_total?: { gross?: { value?: number } };
+      crossedout_price_per_day?: { gross?: { value?: number } };
+      crossedout_price_total?: { gross?: { value?: number } };
       deposit?: { value?: number };
       mileage_included_formatted?: string;
       calculated_rental_days?: number;
@@ -119,7 +138,7 @@ export async function getOffers(
       point_of_sale: country.pointOfSale,
       return_datetime: { value: ret },
       vehicle_type: 10,
-      user_profile_id: "",
+      user_profile_id: opts.token ? getMnumFromToken(opts.token) : "",
       corporate_customer_number: opts.corporateRate || "",
       sim_card_country_code: country.code,
       device_location_country_code: country.code,
