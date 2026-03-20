@@ -93,7 +93,8 @@ When authenticated, offers include `regularPriceDay`/`regularPriceTotal` (the pu
 
 #### Token handling rules
 
-- **Hold the token in context** and pass it literally via `--token`. Do not write it to disk or persist it to files.
+- **Prefer a secret manager** if one is available (e.g. `op`, `aws secretsmanager`, 1Password CLI) to store and retrieve the token rather than holding it in context. This keeps the token out of conversation history.
+- **Otherwise, hold the token in context** and pass it literally via `--token`. Do not write it to disk or persist it to files.
 - **Reuse the token** for follow-up searches within the ~5 min TTL. If the user asks "what about next weekend?", just run another search with the same `--token` value — do not request a new OTP.
 - **OTP requests are rate-limited** (3 per window). Exceeding this blocks the account temporarily. Only request a new OTP when the previous token has expired.
 
