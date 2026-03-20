@@ -234,8 +234,8 @@ agent can read stdout/stderr and decide what to do next.
 
 ### Output conventions
 
-- **JSON to stdout** by default (for agent consumption)
-- **`--table`** flag (or similar) for human-readable output
+- **JSON to stdout** by default — this is what you should always consume. Parse the JSON and format results yourself based on what the user asked.
+- **`--table`** flag (or similar) exists for developers running scripts by hand. Do not use it — it discards fields you may need.
 - **Diagnostics to stderr** — progress, warnings, debug info. Never mix
   data and diagnostics on the same stream.
 - **Predictable output size**: many agent harnesses truncate output beyond
