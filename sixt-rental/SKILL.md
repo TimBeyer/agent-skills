@@ -30,6 +30,7 @@ Search Sixt car rental availability via their gRPC-web API. Scripts output JSON 
 | `--limit` | 5 | Max offers to fetch protection for (0 = all) |
 | `--rate` | — | Corporate customer number |
 | `--campaign` | — | Partner campaign code |
+| `--token` | — | JWT auth token for member/Platinum pricing (from `sixt-login`) |
 | `--table` | false | Human-readable table output |
 
 ### Generate booking URL
@@ -46,6 +47,7 @@ Search Sixt car rental availability via their gRPC-web API. Scripts output JSON 
 | `--country` | DE | Country code |
 | `--campaign` | — | Partner campaign code |
 | `--station-name` | auto | Override station display name |
+| `--token` | — | JWT auth token (from `sixt-login`) |
 | `--table` | false | Output just the URL string |
 
 ### Look up stations
@@ -58,6 +60,7 @@ Search Sixt car rental availability via their gRPC-web API. Scripts output JSON 
 |------|---------|-------------|
 | `--query` | required | City or location to search |
 | `--country` | DE | Country code |
+| `--token` | — | JWT auth token (from `sixt-login`) |
 | `--table` | false | Human-readable table output |
 
 ### Authenticate (member pricing)
@@ -88,6 +91,8 @@ Pass the token to other scripts via `--token` for member/Platinum pricing:
 The token is a short-lived JWT (~5 min TTL). It is never written to disk.
 
 All three scripts (`sixt-search`, `sixt-booking-url`, `sixt-stations`) accept `--token`.
+
+When authenticated, offers include `regularPriceDay`/`regularPriceTotal` (the public price) alongside the discounted member price. The `promoLabel` field shows the tier (e.g. "PLATINUM Member Rate"). Discounts scale with car class: ~5% economy, ~10% mid-range, ~15% luxury.
 
 ## Campaign codes
 

@@ -4,30 +4,37 @@
 
 Base URL: `https://grpc-prod.orange.sixt.com`
 Protocol: JSON over gRPC-web (POST, Content-Type: application/json)
-Auth: Optional — pass `Authorization: Bearer <jwt>` for member pricing. Set `user_profile_id` to the JWT's `user_id` claim.
+Auth: Optional — pass `Authorization: Bearer <jwt>` plus platform headers (`sx-platform: web-next`, `x-client-type: web`, `x-sx-tenant: 6`) for member pricing. Set `user_profile_id` to the JWT's `mnum` claim (membership number, e.g. `"900123456"`). Do NOT use `user_id` — that causes a 500.
 
 ## Authentication API
 
 Base URL: `https://web-api.orange.sixt.com`
 Protocol: JSON POST with `content-type: text/plain;charset=UTF-8`
-Required headers: `sx-platform: web-next`, `x-client-type: web`, `x-sx-tenant: 6`
+Required headers: `sx-platform: web-next`, `x-client-type: web`, `x-sx-tenant: 6`, `sx-browser-id: <hex>`, `x-client-id: web-browser-<id>`, `x-correlation-id: <uuid>`, `x-sx-e-stable-id: <uuid>`, `x-sx-o-client-id: <uuid>:false`
+
+Session IDs (`sx-browser-id`, `x-sx-e-stable-id`, `x-client-id`) must be consistent between the OTP request and verify calls. The `x-correlation-id` is unique per request.
 
 ### Auth flow (email OTP)
 
 ```
 1. POST /v2/users/getAuthMethod    {"username": "user@example.com"}
-   → confirms Sixt auth (vs social login)
+   → {"type": "sixt", "sixtParams": {"doRegister": false, ...}}
 
 2. POST /v1/auth/requestLoginOTP   {"username": "user@example.com", "channels": ["email"]}
-   → {"otpExpiryTime": "...", "channels": ["email"]}
+   → {"otpExpiryTime": "2026-...", "otpRetryLimit": 3, "channels": [...]}
 
 3. User receives 6-digit OTP via email
 
 4. POST /v1/auth/verifyLoginOTP    {"username": "user@example.com", "otp": "123456"}
-   → {"accessToken": "<jwt>", "expiresIn": 300}
+   → {"accessToken": "<jwt>", "expiresIn": 1773949672}
 ```
 
-The JWT payload contains `user_id` and `mnum` (membership number). TTL is ~5 minutes.
+`expiresIn` is an **absolute Unix timestamp** (epoch seconds), not a relative TTL. The actual TTL is ~5 minutes.
+
+The JWT payload contains:
+- `user_id` — Keycloak identity (e.g. `"12345678"`)
+- `mnum` — Sixt membership number (e.g. `900123456`) — **this is what goes in `user_profile_id`**
+- `name`, `email`, `exp`, etc.
 
 ## Endpoints
 
@@ -193,8 +200,10 @@ The search script wraps the raw API response in a clean camelCase model. Every f
 
 | Field | Type | Example | Description |
 |-------|------|---------|-------------|
-| `priceDay` | number | `80.32` | Gross price per day |
-| `priceTotal` | number | `240.95` | Gross total price |
+| `priceDay` | number | `80.32` | Gross price per day (member price if authenticated) |
+| `priceTotal` | number | `240.95` | Gross total price (member price if authenticated) |
+| `regularPriceDay` | number \| null | `90.32` | Public price per day (only set when authenticated, otherwise null) |
+| `regularPriceTotal` | number \| null | `270.97` | Public total price (only set when authenticated, otherwise null) |
 | `deposit` | number | `300` | Required deposit |
 | `mileage` | string | `"900 kilometers included"` | Included mileage text |
 | `extraKmPrice` | number \| null | `0.35` | Cost per extra km beyond included |
