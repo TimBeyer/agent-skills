@@ -68,13 +68,17 @@ Search Sixt car rental availability via their gRPC-web API. Scripts output JSON 
 Two-step non-interactive OTP login. The token is a short-lived JWT (~5 min TTL).
 
 ```bash
-# Step 1: Request OTP (outputs session handle — not sensitive)
-SESSION=$(<skill-dir>/scripts/sixt-login --email user@example.com)
-# → sends OTP to email, ask user for the 6-digit code
+# Step 1: Request OTP (outputs session handle)
+<skill-dir>/scripts/sixt-login --email user@example.com
+# → prints session handle to stdout, sends OTP to email
+# → ask user for the 6-digit code
 
-# Step 2: Verify OTP and immediately use the token in the same shell
-TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com --otp 123456 --session "$SESSION") && \
-  <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN"
+# Step 2: Verify OTP (outputs JWT token)
+<skill-dir>/scripts/sixt-login --email user@example.com --otp 123456 --session "<session from step 1>"
+# → prints token to stdout — hold in context, pass via --token
+
+# Step 3: Use token
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "<token from step 2>"
 ```
 
 | Flag | Default | Description |
@@ -87,21 +91,11 @@ All three scripts (`sixt-search`, `sixt-booking-url`, `sixt-stations`) accept `-
 
 When authenticated, offers include `regularPriceDay`/`regularPriceTotal` (the public price) alongside the discounted member price. The `promoLabel` field shows the tier (e.g. "PLATINUM Member Rate"). Discounts scale with car class: ~5% economy, ~10% mid-range, ~15% luxury.
 
-#### Important: token handling for agents
+#### Token handling rules
 
-**Shell variables don't persist between tool calls.** Each shell execution starts fresh — `$TOKEN` from a previous call is gone. Always chain verify + search in a single `&&` command so the token stays in one shell session.
-
-**Batch searches to avoid repeated OTPs.** The token expires in ~5 min and each new one requires the user to check email. If the user asks follow-up questions (e.g. "what about next weekend?"), chain all searches into one command while the token is still valid rather than requesting a new OTP. OTP requests are rate-limited (3 per window) — exceeding this blocks the account temporarily.
-
-**If a secret manager is available** (e.g. `op`, `aws secretsmanager`, 1Password CLI), use it to stash the token for the session instead of re-requesting OTPs:
-```bash
-# Store after verify
-TOKEN=$(...sixt-login --otp ...) && your-secret-manager set sixt-token "$TOKEN"
-# Retrieve in later calls
-<skill-dir>/scripts/sixt-search ... --token "$(your-secret-manager get sixt-token)"
-```
-
-**Never write the token to a file on disk.** If no secret manager is available, pass the token value literally in `--token` arguments.
+- **Hold the token in context** and pass it literally via `--token`. Do not write it to disk or persist it to files.
+- **Reuse the token** for follow-up searches within the ~5 min TTL. If the user asks "what about next weekend?", just run another search with the same `--token` value — do not request a new OTP.
+- **OTP requests are rate-limited** (3 per window). Exceeding this blocks the account temporarily. Only request a new OTP when the previous token has expired.
 
 ## Campaign codes
 
@@ -153,19 +147,9 @@ All offer fields are filterable. See `references/api.md` for the complete field 
 <skill-dir>/scripts/sixt-search --pickup "2026-05-16T09:00" --return "2026-05-30T09:00" --city Lisbon --country PT --filter "electric" --filter "range>=300"
 ```
 
-**Authenticated search (chain verify + search in one shell):**
+**Authenticated search:**
 ```bash
-SESSION=$(<skill-dir>/scripts/sixt-login --email user@example.com)
-# → ask user for OTP code, then chain verify + search:
-TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com --otp <code> --session "$SESSION") && \
-  <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN" --table
-```
-
-**Batch multiple searches in one token session:**
-```bash
-TOKEN=$(<skill-dir>/scripts/sixt-login --email user@example.com --otp <code> --session "$SESSION") && \
-  <skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "$TOKEN" && \
-  <skill-dir>/scripts/sixt-search --pickup "2026-04-05T10:00" --return "2026-04-07T18:00" --station 8 --token "$TOKEN"
+<skill-dir>/scripts/sixt-search --pickup "2026-04-01T10:00" --return "2026-04-03T18:00" --station 8 --token "<token>" --table
 ```
 
 **Compare Holiday vs public rate:**
