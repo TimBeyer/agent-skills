@@ -14,7 +14,7 @@ npx skills add TimBeyer/agent-skills
 
 **[sixt-rental](skills/sixt-rental/)**
 
-Search Sixt car rental availability via gRPC-web. Compare stations, filter by electric/family, fetch protection pricing, generate booking URLs.
+Find and compare Sixt rental cars across stations and cities. Filter by electric, family, SUV. Fetch insurance costs, apply campaign discounts, generate booking URLs.
 
 `TypeScript` `Bun` `4 scripts`
 
