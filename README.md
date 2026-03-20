@@ -1,58 +1,42 @@
 # Agent Skills
 
-Reusable [Agent Skills](https://agentskills.io) for Claude Code, Copilot, Cursor, and other agents.
+Ready-to-use capabilities for your AI agent. One command to install, zero configuration — your agent discovers and uses them automatically.
 
 ```bash
 npx skills add TimBeyer/agent-skills
 ```
 
-## Skills
+Works with [Claude Code](https://claude.com/claude-code), GitHub Copilot, Cursor, and [any agent that supports the format](https://agentskills.io).
 
-<table>
-<tr>
-<td width="25%" valign="top">
+---
 
-**[sixt-rental](skills/sixt-rental/)**
+### [sixt-rental](skills/sixt-rental/)
 
-Find and compare Sixt rental cars across stations and cities. Filter by electric, family, SUV. Fetch insurance costs, apply campaign discounts, generate booking URLs.
+Your agent searches every Sixt station in a city at once, compares prices side by side, filters by what you care about (electric, 5+ seats, SUV, price cap), and knows about partner discount codes most people never find. It handles the insurance math and generates a booking link when you're ready.
 
-`TypeScript` `Bun` `4 scripts`
+### [readme-design](skills/readme-design/)
 
-</td>
-<td width="25%" valign="top">
+Guides your agent through a design thinking process before writing a README — explore the project, understand the audience, choose a structural direction, find the hook. Produces distinctive, well-crafted GitHub markdown instead of generic boilerplate.
 
-**[readme-design](skills/readme-design/)**
+### [terminal-recording](skills/terminal-recording/)
 
-Design distinctive README.md files through a design thinking process — audience, structure, hook — before writing. Covers the full GitHub-flavored markdown toolkit.
+Your agent creates clean, reproducible terminal recordings for documentation. Uses tmux + asciinema + agg for GIFs without the flashing artifacts you get from pixel-capture tools. Manual or fully scripted.
 
-</td>
-<td width="25%" valign="top">
+---
 
-**[terminal-recording](skills/terminal-recording/)**
-
-Create automated terminal recordings for docs. Uses tmux + asciinema + agg for clean GIFs without flashing artifacts.
-
-</td>
-<td width="25%" valign="top">
-
-**[skill-dev](skills/skill-dev/)**
-
-Conventions for building Agent Skills with Bun — directory structure, SKILL.md authoring, script design, testing, repo layout.
-
-</td>
-</tr>
-</table>
-
-## Install
-
-Install all skills at once, or pick one:
+Install all skills, or pick just the ones you need:
 
 ```bash
-npx skills add TimBeyer/agent-skills                        # all skills
+npx skills add TimBeyer/agent-skills                        # all
 npx skills add TimBeyer/agent-skills --skill sixt-rental    # just one
 ```
 
-Skills follow the [Agent Skills](https://agentskills.io/specification) open format. Each is a self-contained directory with a `SKILL.md` that agents discover and load automatically. No configuration needed — install and use.
+<details>
+<summary><strong>For skill authors</strong></summary>
+
+This repo also includes **[skill-dev](skills/skill-dev/)** — conventions for building Agent Skills with Bun. Covers directory structure, SKILL.md authoring, script design, testing, and repo layout. See [CLAUDE.md](CLAUDE.md) for development workflow.
+
+</details>
 
 ## License
 
