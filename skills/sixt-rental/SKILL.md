@@ -22,7 +22,7 @@ Search Sixt car rental availability via their gRPC-web API. Always use the defau
 | `--return` | required | Return datetime |
 | `--city` | Berlin | City name for station search |
 | `--station` | — | Specific station ID (skips city search) |
-| `--country` | DE | 2-letter country code (affects API params, currency, booking domain) |
+| `--country` | DE | 2-letter country code (affects API params and currency) |
 | `--filter` | — | Filter expression (repeatable, AND'd). See examples below |
 | `--electric` | false | Shortcut for `--filter "electric"` |
 | `--family` | false | Shortcut for `--filter "passengers>=5" "bags>=3" "automatic"` |
@@ -44,7 +44,7 @@ Search Sixt car rental availability via their gRPC-web API. Always use the defau
 | `--pickup` | required | Pickup datetime |
 | `--return` | required | Return datetime |
 | `--station` | required | Station branch ID |
-| `--country` | DE | Country code |
+| `--country` | DE | Country code (point of sale only; URL always uses sixt.de) |
 | `--campaign` | — | Partner campaign code |
 | `--station-name` | auto | Override station display name |
 | `--token` | — | JWT auth token (from `sixt-login`) |
@@ -102,10 +102,17 @@ When authenticated, offers include `regularPriceDay`/`regularPriceTotal` (the pu
 
 | Code | Includes | Best for |
 |------|----------|----------|
-| `partner-Travelsales_wdmobility_Holiday` | Zero deductible, extra driver, unlimited km, free cancellation | International trips (all-inclusive) |
+| `partner-Travelsales_wdmobility_Holiday` | Zero deductible, extra driver, unlimited km, free cancellation | International trips (all-inclusive); requires sixt.de domain |
 | `partner-wdmobility_public_special` | Discounted base rate | Domestic trips (pick own insurance) |
 
 Holiday rate prices include all insurance — compare the Holiday total against public base + protection to see real savings.
+
+## Booking link domains
+
+The domain in a Sixt booking URL controls the website locale (language, currency display) — it does not affect where the car is rented. The rental location is determined by the station. Booking URLs always generate with the `sixt.de` domain because the Holiday rate is pinned to the German market.
+
+- **Holiday rate** (`partner-Travelsales_wdmobility_Holiday`): keep `.de` — changing it breaks the campaign pricing.
+- **Other rates**: you may swap the domain to match the user's locale for a localized booking experience (e.g. `sixt.de` → `sixt.es` for a Spanish-speaking user). This changes the website language, not the rental location. The URL parameters stay valid across domains.
 
 ## Filtering
 
