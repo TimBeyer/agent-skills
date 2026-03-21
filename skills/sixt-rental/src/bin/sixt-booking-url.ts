@@ -19,7 +19,7 @@ Required:
   --station       Station branch ID
 
 Options:
-  --country       2-letter country code (default: DE)
+  --country       2-letter country code for point of sale (default: DE)
   --campaign      Partner campaign code
   --station-name  Human-readable station name (auto-detected if omitted)
   --token         JWT auth token for member pricing (from sixt-login)
@@ -83,7 +83,7 @@ if (values.campaign) {
   params.set("campaign", values.campaign);
 }
 
-const url = `https://www.${country.domain}/betafunnel/#/offerlist?${params.toString()}`;
+const url = `https://www.sixt.de/betafunnel/#/offerlist?${params.toString()}`;
 
 if (values.table) {
   console.log(url);

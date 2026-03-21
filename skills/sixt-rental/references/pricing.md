@@ -23,6 +23,8 @@ Partner campaign codes unlock discounted or bundled rates via the `campaign` fie
 | `partner-Travelsales_wdmobility_Holiday` | Zero deductible, extra driver, unlimited km, free cancellation | International trips (prices look higher but include everything) |
 | `partner-wdmobility_public_special` | Discounted base rate (extras bookable separately) | Domestic trips where you pick your own insurance |
 
+> **Domain note:** The Holiday rate is pinned to the `sixt.de` domain. Booking URLs for this campaign must use `sixt.de` regardless of the user's locale. The domain controls the website language, not the rental location.
+
 ### Comparing Campaign vs Public Rates
 
 **Holiday rate** prices include all insurance/extras baked in. To compare fairly:
